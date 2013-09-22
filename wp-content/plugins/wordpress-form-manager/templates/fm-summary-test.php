@@ -35,13 +35,29 @@ fm_summary_get_item_value($nickname) - get an item's value by nickname
 <?php echo "<hr />"; ?>
 <?php while(fm_summary_have_items()): fm_summary_the_item(); ?>
 	<?php switch(fm_summary_the_type()){
-		case 'separator': ?><hr /><?php break;
+		case 'separator': break;
 		default:
-		if(fm_summary_has_data() && (fm_summary_the_nickname() != "miraclename") ): ?>
-		<li<?php if(fm_summary_the_nickname() != "" ) echo " input type=hidden id=\"fm-item-".fm_summary_the_nickname()."-hidden\" value=\"".fm_summary_the_value()."\" id=\"fm-item-".fm_summary_the_nickname()."\"</br>";?><strong><?php echo fm_summary_the_value();?></strong></li>
-
-		<?php apply_filters('excerpt_more', fm_summary_the_value()); apply_filters('the_excerpt', fm_summary_the_value()); ?>
-	<?php endif;
+			if ( fm_summary_the_nickname() == "miraclename" )
+			{
+			}
+			elseif (fm_summary_the_nickname() == "what-happened")
+			{
+			echo "<li value=\"".fm_summary_the_value()."\" id=\"fm-item-".fm_summary_the_nickname()."\"</br>";?>
+			<strong> <?php echo fm_summary_the_value(); ?> </strong></li></br>
+			<?php
+			}
+			elseif (fm_summary_the_nickname() == "life-before-miracle")
+			{
+			echo "<li value=\"".fm_summary_the_value()."\" id=\"fm-item-".fm_summary_the_nickname()."\"</br>";?>
+			<strong> <?php echo fm_summary_the_value(); ?> </strong></li></br>
+			<?php
+			}
+			elseif (fm_summary_the_nickname() == "life-with-miracle")
+			{
+			echo "<li value=\"".fm_summary_the_value()."\" id=\"fm-item-".fm_summary_the_nickname()."\"</br>";?>
+			<strong> <?php echo fm_summary_the_value(); ?> </strong></li>
+			<?php
+			}		
 		} // end switch ?>
 <?php endwhile; ?>
 <?php /* The user's first and last name, if there is a logged in user */ ?>
