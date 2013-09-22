@@ -223,12 +223,3 @@ function pin_title( $title, $sep ) {
 	return $title;
 }
 add_filter( 'wp_title', 'pin_title', 10, 2 );
-
-function admin_redirect() {
-	if ( !is_user_logged_in()) {
-		wp_redirect( home_url('/wp-admin/') );
-		exit;
-	}
-}
- 
-add_action('get_header', 'admin_redirect');
