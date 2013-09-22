@@ -1,11 +1,6 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 		<header class="entry-header">
 			<h1 class="entry-title"><?php the_title(); ?></h1>
-			<?php if ( comments_open() ) : ?>
-				<div class="comments-link">
-					<?php comments_popup_link( '<span class="leave-reply">' . __( 'Leave a reply', 'pin' ) . '</span>', __( '1 Reply', 'pin' ), __( '% Replies', 'pin' ) ); ?>
-				</div><!-- .comments-link -->
-			<?php endif; comments_open() ?>
 		</header><!-- .entry-header -->
 
 		<?php if ( is_search() ) : // Only display Excerpts for Search ?>
