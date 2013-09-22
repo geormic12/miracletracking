@@ -31,11 +31,11 @@
 				// Show the default message to everyone else.
 			?>
 				<header class="entry-header">
-					<h1 class="entry-title">'Nothing Found'</h1>
+					<h1 class="entry-title">'No Miracles matching that search'</h1>
 				</header>
 
 				<div class="entry-content">
-					<p>'Apologies, but no results were found. Perhaps searching will help find a related post.'</p>
+					<p>'No Miracles matching that search'</p>
 					<?php get_search_form(); ?>
 				</div><!-- .entry-content -->
 			<?php endif; // end current_user_can() check ?>
