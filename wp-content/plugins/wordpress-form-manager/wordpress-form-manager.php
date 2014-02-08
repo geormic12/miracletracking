@@ -3,7 +3,7 @@
 Plugin Name: Form Manager
 Plugin URI: http://www.campbellhoffman.com/form-manager/
 Description: Create custom forms; download entered data in .csv format; validation, required fields, custom acknowledgments;
-Version: 1.6.41
+Version: 1.6.45
 Author: Campbell Hoffman
 Author URI: http://www.campbellhoffman.com/
 Text Domain: wordpress-form-manager
@@ -29,10 +29,13 @@ $fm_oldIncludePath = get_include_path();
 set_include_path( dirname( __FILE__ ) . '/' );
 
 global $fm_currentVersion;
-$fm_currentVersion = 		"1.6.41";
+$fm_currentVersion = 		"1.6.45";
 
 global $fm_DEBUG;
 $fm_DEBUG = 				false;
+
+global $fm_forceRinstall;
+$fm_forceReinstall =		false;
 
 // flags for other plugins we want to integrate with
 global $fm_SLIMSTAT_EXISTS;
@@ -74,7 +77,6 @@ if(isset($wpdb))
 			);
 
 include 'helpers.php';
-
 include 'db.php';
 include 'display.php';
 include 'template.php';
@@ -94,6 +96,7 @@ $optionDefaults = array(
 	'fm-nonce-check' 		=> 'YES',
 	'fm-shortcode-scripts' 	=> 'NO',
 	'fm-disable-css' 		=> 'NO',
+	'fm-strip-tags'			=> 'YES'
 );
 
 foreach ( $optionDefaults as $key=>$val ){
@@ -123,13 +126,34 @@ load_plugin_textdomain(
 	dirname( plugin_basename( __FILE__ ) ) . '/languages/' 
 	);
 
-$fmdb = new fm_db_class( $wpdb->prefix.get_option( 'fm-forms-table-name' ),
+$fmdb = fm_db_class::Construct( $wpdb->prefix.get_option( 'fm-forms-table-name' ),
 	$wpdb->prefix.get_option( 'fm-items-table-name' ),
 	$wpdb->prefix.get_option( 'fm-settings-table-name' ),
 	$wpdb->prefix.get_option( 'fm-templates-table-name' ),
 	$wpdb->dbh
 	);
 	
+// if there was a problem, register the error page and exit
+if ( $fmdb == null ){
+
+	function fm_showErrorPage(){ include 'pages/error.php'; }
+	function fm_registerErrorPage(){
+		add_object_page(
+			__("Forms", 'wordpress-form-manager'), 
+			__("Forms", 'wordpress-form-manager'),
+			apply_filters( 'fm_main_capability', 'manage_options' ), 
+			'fm-admin-main', 
+			'fm_showErrorPage',
+			plugins_url( '/mce_plugins/formmanager.png', __FILE__ )
+			);
+	}
+	add_action( 'admin_menu', 'fm_registerErrorPage' );
+	
+	return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
 $fm_display = new fm_display_class();
 $fm_templates = new fm_template_manager();
 				
@@ -344,10 +368,11 @@ function fm_adminEnqueueScripts( ) {
 add_action( 'init', 'fm_userInit' );
 function fm_userInit() {
 	global $fm_currentVersion;
+	global $fm_forceReinstall;
 	
-	//check if there was a stealth update
+	//check if there was a stealth update, or if none of the database tables were found
 	$ver = get_option( 'fm-version' );
-	if ( $ver != $fm_currentVersion ) {
+	if ( $ver != $fm_currentVersion || $fm_forceReinstall === true ) {
 		fm_install();
 	}
 	

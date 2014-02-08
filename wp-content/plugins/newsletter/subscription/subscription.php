@@ -19,10 +19,10 @@ class NewsletterSubscription extends NewsletterModule {
     }
 
     function __construct() {
-        parent::__construct('subscription', '1.0.9');
+        parent::__construct('subscription', '1.1.1');
 
         add_action('wp_login', array($this, 'hook_wp_login'));
-        
+
         // Must be called after the Newsletter::hook_init, since some constants are defined
         // there.
         add_action('init', array($this, 'hook_init'), 90);
@@ -30,8 +30,9 @@ class NewsletterSubscription extends NewsletterModule {
 
     function hook_init() {
         $action = isset($_REQUEST['na']) ? $_REQUEST['na'] : '';
-        if (empty($action) || is_admin()) return;
-        
+        if (empty($action) || is_admin())
+            return;
+
         if ($action == 's') {
             $user = $this->subscribe();
             if ($user->status == 'E')
@@ -73,10 +74,10 @@ class NewsletterSubscription extends NewsletterModule {
         // Migrate the profile_text from profile to subscription options
         $options_profile = $this->get_options('profile');
         $default_options_profile = $this->get_default_options('profile');
-        
+
         if (empty($options_profile)) {
             update_option('newsletter_profile', $this->get_default_options('profile'));
-        } else { 
+        } else {
             update_option('newsletter_profile', array_merge($default_options_profile, $options_profile));
         }
 
@@ -163,17 +164,17 @@ class NewsletterSubscription extends NewsletterModule {
     function hook_wp_login($user_login) {
         global $newsletter;
 
-        $this->logger->info(__METHOD__ . '> Start with ' . $user_login);
+        //$this->logger->info(__METHOD__ . '> Start with ' . $user_login);
         $wp_user = get_user_by('login', $user_login);
         if (!empty($wp_user)) {
-            $this->logger->info($wp_user);
+            //$this->logger->info($wp_user);
             // We have a user able to login, so his subscription can be confirmed if not confirmed
             $user = $newsletter->get_user($wp_user->user_email);
-            if (!empty($user)) {
+            if (!empty($user) && isset($this->options['wp_welcome'])) {
                 $this->confirm($user->id, $this->options['wp_welcome'] == 1);
             }
         }
-        $this->logger->info(__METHOD__ . '> End');
+        //$this->logger->info(__METHOD__ . '> End');
     }
 
     /**
@@ -197,9 +198,21 @@ class NewsletterSubscription extends NewsletterModule {
         $user = $newsletter->get_user($email);
 
         if ($user != null) {
-            if ($user->status == 'B' || $user->status == 'C') {
-                $this->logger->error('Subscription of an address with status ' . $user->status);
+            $this->logger->info('Subscription of an address with status ' . $user->status);
+            if ($user->status == 'B') {
                 $user->status = 'E';
+                return $user;
+            }
+
+            // Already confirmed
+            if ($user->status == 'C') {
+                if ($emails && !isset($options['resend_welcome_email_disabled']) && !isset($options['confirmed_disabled'])) {
+                    $message = $options[$prefix . 'confirmed_message'];
+                    $subject = $options[$prefix . 'confirmed_subject'];
+                    $this->mail($user->email, $newsletter->replace($subject, $user), $newsletter->replace($message, $user));
+                }
+
+                $user->status = 'A';
                 return $user;
             }
         }
@@ -244,12 +257,13 @@ class NewsletterSubscription extends NewsletterModule {
                     $user['list_' . $i] = 1;
             }
         }
-        
+
         // Forced preferences as set on subscription configuration
         for ($i = 1; $i <= NEWSLETTER_LIST_MAX; $i++) {
-            if (empty($options['preferences_' . $i])) continue;
+            if (empty($options['preferences_' . $i]))
+                continue;
             $user['list_' . $i] = 1;
-        }        
+        }
 
         $user['token'] = $newsletter->get_token();
         $user['ip'] = $_SERVER['REMOTE_ADDR'];
@@ -286,7 +300,7 @@ class NewsletterSubscription extends NewsletterModule {
 
 
         $prefix = ($user->status == 'C') ? 'confirmed_' : 'confirmation_';
-        
+
         if (empty($options[$prefix . 'disabled'])) {
             $message = $options[$prefix . 'message'];
 
@@ -326,10 +340,17 @@ class NewsletterSubscription extends NewsletterModule {
         } else {
             $user = $newsletter->get_user($user_id);
         }
+        
+        $this->logger->debug('Confirmation for:');
+        $this->logger->debug($user);
+        
 
-        if ($user == null)
+        if ($user == null) {
+            $this->logger->debug('Not found');
             die('No subscriber found.');
+        }
         if ($user->status != 'S') {
+            $this->logger->debug('Was not in status S');
             $user->status = 'E';
             return $user;
         }
@@ -340,7 +361,7 @@ class NewsletterSubscription extends NewsletterModule {
 
         if (!$emails)
             return $user;
-        
+
         if (empty($this->options['confirmed_disabled'])) {
             $message = $this->options['confirmed_message'];
             // TODO: This is always empty!
@@ -362,11 +383,17 @@ class NewsletterSubscription extends NewsletterModule {
     function unsubscribe() {
         global $newsletter;
         $user = $this->get_user_from_request();
+        
+        $this->logger->debug('Unsubscription for:');
+        $this->logger->debug($user);
+        
         setcookie('newsletter', '', time() - 3600);
         if ($user == null) {
+            $this->logger->debug('Not found');
             die('Subscriber not found');
         }
         if ($user->status != 'C') {
+            $this->logger->debug('Was not in status C');
             $user->status = 'E';
             return $user;
         }
@@ -613,7 +640,7 @@ class NewsletterSubscription extends NewsletterModule {
      *
      * @return string The html code of the subscription form
      */
-    function get_subscription_form($referrer = null, $action=null) {
+    function get_subscription_form($referrer = null, $action = null) {
         $options_profile = get_option('newsletter_profile');
         $options = get_option('newsletter');
 
@@ -657,7 +684,8 @@ class NewsletterSubscription extends NewsletterModule {
             if ($options_profile['list_' . $i . '_status'] != 2)
                 continue;
             $lists .= "\t\t" . '<input type="checkbox" name="nl[]" value="' . $i . '"';
-            if ($options_profile['list_' . $i . '_checked'] == 1) $lists .= ' checked';
+            if ($options_profile['list_' . $i . '_checked'] == 1)
+                $lists .= ' checked';
             $lists .= '/>&nbsp;' . $options_profile['list_' . $i] . '<br />' . "\n";
         }
         if (!empty($lists))
@@ -687,7 +715,10 @@ class NewsletterSubscription extends NewsletterModule {
 
         $extra = apply_filters('newsletter_subscription_extra', array());
         foreach ($extra as &$x) {
-            $buffer .= "<tr>\n\t<th>" . $x['label'] . "</th>\n\t<td>\n\t\t";
+            $label = $x['label'];
+            if (empty($label))
+                $label = '&nbsp;';
+            $buffer .= "<tr>\n\t<th>" . $label . "</th>\n\t<td>\n\t\t";
             $buffer .= $x['field'] . "\n\t</td>\n</tr>\n\n";
         }
 
@@ -714,6 +745,7 @@ class NewsletterSubscription extends NewsletterModule {
         $buffer .= "</table>\n</form>\n</div>";
         return $buffer;
     }
+   
 
     /**
      * Generate the profile editing form.

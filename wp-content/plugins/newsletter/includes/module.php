@@ -165,7 +165,7 @@ class NewsletterModule {
         @include WP_CONTENT_DIR . '/extensions/newsletter/' . $this->module . '/languages/' . $sub . 'en_US.php';
         @include NEWSLETTER_DIR . '/' . $this->module . '/languages/' . $sub . WPLANG . '.php';
         @include WP_CONTENT_DIR . '/extensions/newsletter/' . $this->module . '/languages/' . $sub . WPLANG . '.php';
-        if (!is_array($options)) {
+        if (!isset($options) || !is_array($options)) {
             return array();
         }
         return $options;
@@ -610,10 +610,12 @@ class NewsletterModule {
             $user = (array) $user;
         if (empty($user['id'])) {
             $existing = $this->get_user($user['email']);
-            if ($existing != null)
+            if ($existing != null) {
                 return false;
-            if (empty($user['token']))
+            }
+            if (empty($user['token'])) {
                 $user['token'] = NewsletterModule::get_token();
+            }
             //if (empty($user['created'])) $user['created'] = time();
             // Database default
             //if (empty($user['status'])) $user['status'] = 'S';

@@ -24,7 +24,7 @@ class Theme_My_Login_Custom_Passwords extends Theme_My_Login_Abstract {
 	 * @access public
 	 * @return object
 	 */
-	public static function get_object() {
+	public static function get_object( $class = null ) {
 		return parent::get_object( __CLASS__ );
 	}
 
@@ -37,13 +37,11 @@ class Theme_My_Login_Custom_Passwords extends Theme_My_Login_Abstract {
 	protected function load() {
 		add_action( 'register_form',       array( &$this, 'password_fields' ) );
 		add_filter( 'registration_errors', array( &$this, 'password_errors' ) );
-		add_filter( 'registration_errors', array( &$this, 'agreement_errors' ) );
 		add_filter( 'random_password',     array( &$this, 'set_password'    ) );
 
 		add_action( 'signup_extra_fields',       array( &$this, 'ms_password_fields'       ) );
 		add_action( 'signup_hidden_fields',      array( &$this, 'ms_hidden_password_field' ) );
 		add_filter( 'wpmu_validate_user_signup', array( &$this, 'ms_password_errors'       ) );
-		add_filter( 'wpmu_validate_user_signup', array( &$this, 'ms_agreement_errors'       ) );
 		add_filter( 'add_signup_meta',           array( &$this, 'ms_save_password'         ) );
 
 		add_action( 'tml_new_user_registered', array( &$this, 'remove_default_password_nag' ) );
@@ -161,24 +159,6 @@ class Theme_My_Login_Custom_Passwords extends Theme_My_Login_Abstract {
 
 		return $errors;
 	}
-	
-	public function agreement_errors( $errors = '' ) {
-		// Make sure $errors is a WP_Error object
-		if ( empty( $errors ) )
-			$errors = new WP_Error();
-
-		// Make sure passwords aren't empty
-		if ( strtoupper($_POST['agreement1']) != "I AGREE" ) {
-			$errors->add( 'agreement_error', __( '<strong>ERROR</strong>: Please enter "I agree" in the agreement 1 field if you agree.' ) );
-		}
-		if ( strtoupper($_POST['agreement2'])  != "I AGREE" ) {
-			$errors->add( 'agreement_error', __( '<strong>ERROR</strong>: Please enter "I agree" in the agreement 2 field if you agree.' ) );
-		}
-		if ( strtoupper($_POST['agreement3'])  != "I AGREE" ) {
-			$errors->add( 'agreement_error', __( '<strong>ERROR</strong>: Please enter "I agree" in the agreement 3 field if you agree.' ) );
-		}
-		return $errors;
-	}
 
 	/**
 	 * Handles password errors for multisite signup form
@@ -195,18 +175,6 @@ class Theme_My_Login_Custom_Passwords extends Theme_My_Login_Abstract {
 	public function ms_password_errors( $result ) {
 		if ( isset( $_POST['stage'] ) && 'validate-user-signup' == $_POST['stage'] ) {
 			$errors = $this->password_errors();
-			foreach ( $errors->get_error_codes() as $code ) {
-				foreach ( $errors->get_error_messages( $code ) as $error ) {
-					$result['errors']->add( $code, preg_replace( '/<strong>([^<]+)<\/strong>: /', '', $error ) );
-				}
-			}
-		}
-		return $result;
-	}
-
-	public function ms_agreement_errors( $result ) {
-		if ( isset( $_POST['stage'] ) && 'validate-user-signup' == $_POST['stage'] ) {
-			$errors = $this->agreement_errors();
 			foreach ( $errors->get_error_codes() as $code ) {
 				foreach ( $errors->get_error_messages( $code ) as $error ) {
 					$result['errors']->add( $code, preg_replace( '/<strong>([^<]+)<\/strong>: /', '', $error ) );
