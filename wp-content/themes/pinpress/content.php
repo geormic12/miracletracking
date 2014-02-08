@@ -1,7 +1,7 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 		<header class="entry-header">
 			<a href="<?php the_permalink(); ?>" title="<?php echo esc_attr( sprintf( __( 'Permalink to %s', 'pin' ), the_title_attribute( 'echo=0' ) ) ); ?>" rel="bookmark">
-			<?php the_post_thumbnail(); ?></a>
+			<?php the_post_thumbnail('medium'); ?></a>
 			<?php if ( is_single() ) : ?>
 			<h1 class="entry-title"><?php the_title(); ?></h1>
 			<?php else : ?>
@@ -9,6 +9,11 @@
 				<a href="<?php the_permalink(); ?>" title="<?php echo esc_attr( sprintf( __( 'Permalink to %s', 'pin' ), the_title_attribute( 'echo=0' ) ) ); ?>" rel="bookmark"><?php the_title(); ?></a>
 			</h1>
 			<?php endif; // is_single() ?>
+			<?php if ( comments_open() ) : ?>
+				<div class="comments-link">
+					<?php comments_popup_link( '<span class="leave-reply">' . __( 'Leave a reply', 'pin' ) . '</span>', __( '1 Reply', 'pin' ), __( '% Replies', 'pin' ) ); ?>
+				</div><!-- .comments-link -->
+			<?php endif; // comments_open() ?>
 		</header><!-- .entry-header -->
 
 		<?php if ( is_search() ) : // Only display Excerpts for Search ?>
@@ -21,11 +26,6 @@
 			<?php wp_link_pages( array( 'before' => '<div class="page-links">' . __( 'Pages:', 'pin' ), 'after' => '</div>' ) ); ?>
 		</div><!-- .entry-content -->
 		<?php endif; ?>
-		<?php if ( comments_open() ) : ?>
-			<div class="comments-link">
-				<?php comments_popup_link( '<span class="leave-reply">' . __( 'Leave a reply', 'pin' ) . '</span>', __( '1 Reply', 'pin' ), __( '% Replies', 'pin' ) ); ?>
-			</div><!-- .comments-link -->
-		<?php endif; // comments_open() ?>
 
 		<footer class="entry-meta">
 			<?php the_tags(); ?>

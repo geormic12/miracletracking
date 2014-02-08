@@ -4,7 +4,7 @@
 		<div id="content" role="main">
 		<?php if ( have_posts() ) : ?>
 
-<div id="col" style="width:100%;" class="column">
+<div id="col" style="width:100%;height:auto;display:table;" class="column">
 			<?php /* Start the Loop */ ?>
 			<?php while ( have_posts() ) : the_post(); ?>
 				<?php get_template_part( 'content', get_post_format() ); ?>
@@ -46,10 +46,4 @@
 
 		</div><!-- #content -->
 	</div><!-- #primary -->
-<script type="text/javascript">
-jQuery( document ).ready( function( $ ) {
-	$( '#col' ).masonry( { singleMode: true } );
-} );
-</script>
-
 <?php get_footer(); ?>

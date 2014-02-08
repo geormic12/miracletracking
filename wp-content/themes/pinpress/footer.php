@@ -10,8 +10,7 @@
 			<div  class="searchform_footercover"><?php get_search_form(); ?></div> 
 		<?php	
 		}
-		?>
-		
+		?>			
 	</footer><!-- #colophon -->
 </div><!-- #page -->
 

@@ -7,8 +7,8 @@ if ( ! isset( $content_width ) )
 
 function pin_gg_load()
 {
-wp_enqueue_script( 'pin-jquery', get_template_directory_uri() . '/js/jquery.js', array( 'jquery' ), '1.4');
-wp_enqueue_script( 'pin-masonry', get_template_directory_uri() . '/js/jquery.masonry.min.js', array( 'jquery-masonry' ), '1.4');
+wp_enqueue_script('jquery');
+wp_enqueue_script('jquery-masonry');
 }
 add_action('wp_enqueue_scripts','pin_gg_load');
 	
@@ -50,6 +50,11 @@ add_action( 'after_setup_theme', 'pin_theme_setup' );
 
 //custom header text
 function pin_header_style() {
+	global $wp_styles;
+	// Loads the Internet Explorer specific stylesheet.
+	wp_enqueue_style( 'pin-ie', get_template_directory_uri() . '/ie.css', array( 'pin-style' ), '20121010' );
+	$wp_styles->add_data( 'pin-ie', 'conditional', 'lt IE 9' );
+	
 	$text_color = get_header_textcolor();
 
 	// If no custom options for text are set, let's bail
@@ -80,6 +85,7 @@ function pin_header_style() {
 	<?php endif; ?>
 	</style>
 	<?php
+	
 }
 
 
@@ -87,7 +93,7 @@ function pin_header_style() {
 function pin_google_webfonts() {
     $protocol = is_ssl() ? 'https' : 'http';
     $query_args = array(
-        'family' => 'Damion:400 |Radley',
+        'family' => 'Roboto:100,300,400,500,700',
         'subset' => 'latin',
     );
 
@@ -223,3 +229,73 @@ function pin_title( $title, $sep ) {
 	return $title;
 }
 add_filter( 'wp_title', 'pin_title', 10, 2 );
+
+//for infinite scroll
+function pin_infinite_js(){
+	wp_register_script( 'infinite_scroll',  get_template_directory_uri() . '/js/jquery.infinitescroll.min.js', array('jquery'),null,true );
+	if( ! is_singular() ) {
+		wp_enqueue_script('infinite_scroll');
+	}
+}
+add_action('wp_enqueue_scripts', 'pin_infinite_js');
+
+
+//Infinite Scroll and masonry
+
+function pin_infinite_masonry_js() {
+	if( ! is_singular() ) { ?>
+	<script>
+	function aadwid()
+	{
+		var ctot = jQuery('#col').width();
+		var quot = Math.floor(ctot/200);
+		var rem = ctot%200;
+		var cadd = Math.floor(rem/quot);
+		var centry = 170 + cadd;
+		jQuery('#col article').css('width',centry);
+	}
+	jQuery(window).load(function(){
+		 aadwid();
+	    	jQuery("#col").masonry();
+	    });
+
+	jQuery(window).resize(function() {
+		aadwid();
+		jQuery("#col").masonry( 'reload' );
+	});
+	   
+	
+	var infinite_scroll = {
+		loading: {
+			img: "<?php echo get_template_directory_uri(); ?>/images/ajax-loader.gif",
+			msgText: "<?php _e( ' ', 'custom' ); ?>",
+			finishedMsg: "<?php _e( 'All posts loaded.', 'custom' ); ?>"
+		},
+		"nextSelector":"#nav-below .nav-previous a",
+		"navSelector":"#nav-below",
+		"itemSelector":"article",
+		"contentSelector":"#col"
+	};
+	setInterval(function() {
+		jQuery( infinite_scroll.contentSelector ).infinitescroll( infinite_scroll );
+		aadwid();
+		jQuery("#col").masonry( 'reload' );
+	}, 100);
+	
+	
+	</script>
+	<?php
+	}
+}
+add_action( 'wp_footer', 'pin_infinite_masonry_js',100 );
+
+//for 404 page infinite scroll
+function pin_paged_404_fix( ) {
+	global $wp_query;
+	if ( is_404() || !is_paged() || 0 != count( $wp_query->posts ) )
+		return;
+	$wp_query->set_404();
+	status_header( 404 );
+	nocache_headers();
+}
+add_action( 'wp', 'pin_paged_404_fix' );
