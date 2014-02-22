@@ -438,7 +438,7 @@ msgstr ""
 
 #: includes/class-theme-my-login-template.php:366
 msgid ""
-"Please enter your username or email address. You will receive a link to "
+"Please enter your email address. You will receive a link to "
 "create a new password via email."
 msgstr ""
 
@@ -602,18 +602,18 @@ msgid "Invalid key"
 msgstr ""
 
 #: includes/class-theme-my-login.php:1059
-msgid "<strong>ERROR</strong>: Please enter a username."
+msgid "<strong>ERROR</strong>: Please enter a Display Name."
 msgstr ""
 
 #: includes/class-theme-my-login.php:1061
 msgid ""
-"<strong>ERROR</strong>: This username is invalid because it uses illegal "
-"characters. Please enter a valid username."
+"<strong>ERROR</strong>: This Display Name is invalid because it uses illegal "
+"characters. Please enter a valid Display Name."
 msgstr ""
 
 #: includes/class-theme-my-login.php:1064
 msgid ""
-"<strong>ERROR</strong>: This username is already registered, please choose "
+"<strong>ERROR</strong>: This Display Name is already registered, please choose "
 "another one."
 msgstr ""
 

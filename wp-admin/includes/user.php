@@ -106,7 +106,7 @@ function edit_user( $user_id = 0 ) {
 
 	/* checking that username has been typed */
 	if ( $user->user_login == '' )
-		$errors->add( 'user_login', __( '<strong>ERROR</strong>: Please enter a username.' ) );
+		$errors->add( 'user_login', __( '<strong>ERROR</strong>: Please enter a Display Name.' ) );
 
 	/* checking the password has been typed twice */
 	do_action_ref_array( 'check_passwords', array( $user->user_login, &$pass1, &$pass2 ) );
