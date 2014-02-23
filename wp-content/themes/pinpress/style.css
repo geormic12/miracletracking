@@ -17,7 +17,8 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
 	font-size: 100%;
 	vertical-align: baseline;
 }
-h1, h2, h3, h4, h5, h6{font-family: Roboto,Georgia,"Times New Roman",Times,serif; }
+h1 {font-family: Palatino Linotype, Book Antiqua3, Palatino, serif; }
+h2, h3, h4, h5, h6{font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; }
 body {
 	line-height: 1;
 }
@@ -440,9 +441,9 @@ html {
 body {
 	font-size: 15px;
 	font-weight:300;
-	font-family:Roboto,"Times New Roman",Times,serif;
+	font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif;
 	text-rendering: optimizeLegibility;
-	color:#330000;
+	color:#003300;
     word-wrap: break-word;
     background:#eee;
     transition-duration: 0.2s;
